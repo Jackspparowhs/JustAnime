@@ -267,7 +267,38 @@
         <!-- sp:end-feature:nav-btf -->
         <!-- sp:feature:host-btf -->
         
-        
+        <script>
+  // Replace with your deployed API URL
+  const API_BASE = 'https://anime-api-self-one.vercel.app/api';
+
+  async function loadAnimeData() {
+    try {
+      const res = await fetch(`${API_BASE}/top-ten`);
+      const data = await res.json();
+
+      if (!data.success) throw new Error("API returned error");
+
+      const container = document.getElementById("anime-list");
+      container.innerHTML = ""; // Clear old content
+
+      data.results.topTen.today.forEach((anime) => {
+        const card = document.createElement("div");
+        card.className = "anime-card";
+        card.innerHTML = `
+          <img src="${anime.poster}" alt="${anime.title}" class="anime-img"/>
+          <h3>${anime.title}</h3>
+        `;
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+<div id="anime-list" class="anime-grid"></div>
+
+  document.addEventListener("DOMContentLoaded", loadAnimeData);
+</script>
+
                               
             </script>
 
