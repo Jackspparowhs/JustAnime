@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QNPNFNWHYT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);} 
-      gtag('js', new Date());
-
-      gtag('config', 'G-QNPNFNWHYT');
-    </script>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
@@ -87,37 +78,6 @@
         }
       }
     </script>
-<script>
-  // Replace with your deployed API URL
-  const API_BASE = 'https://anime-api-self-one.vercel.app/api';
-
-  async function loadAnimeData() {
-    try {
-      const res = await fetch(`${API_BASE}/top-ten`);
-      const data = await res.json();
-
-      if (!data.success) throw new Error("API returned error");
-
-      const container = document.getElementById("anime-list");
-      container.innerHTML = ""; // Clear old content
-
-      data.results.topTen.today.forEach((anime) => {
-        const card = document.createElement("div");
-        card.className = "anime-card";
-        card.innerHTML = `
-          <img src="${anime.poster}" alt="${anime.title}" class="anime-img"/>
-          <h3>${anime.title}</h3>
-        `;
-        container.appendChild(card);
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
-<div id="anime-list" class="anime-grid"></div>
-
-  document.addEventListener("DOMContentLoaded", loadAnimeData);
-</script>
 
     <link rel="canonical" href="https://justanime.to" />
 
