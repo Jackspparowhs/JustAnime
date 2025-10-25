@@ -1,31 +1,31 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import getHomeInfo from '../utils/getHomeInfo.utils.js';
+useEffect(() => {
+  const fetchHomeInfo = async () => {
+    try {
+      const res = await fetch("https://justanime-backend.vercel.app/api/anime");
+      const data = await res.json();
+      if (!data.success) throw new Error("Failed to fetch");
 
-const HomeInfoContext = createContext();
+      // Transform the API data to match your Home.jsx props
+      const allAnime = data.results;
 
-export const HomeInfoProvider = ({ children }) => {
-    const [homeInfo, setHomeInfo] = useState(null);
-    const [homeInfoLoading, setHomeInfoLoading] = useState(true);
-    const [error, setError] = useState(null);
-    useEffect(() => {
-        const fetchHomeInfo = async () => {
-            try {
-                const data = await getHomeInfo();
-                setHomeInfo(data);
-            } catch (err) {
-                console.error("Error fetching home info:", err);
-                setError(err);
-            } finally {
-                setHomeInfoLoading(false);
-            }
-        };
-        fetchHomeInfo();
-    }, []);
-    return (
-        <HomeInfoContext.Provider value={{ homeInfo, homeInfoLoading, error }}>
-            {children}
-        </HomeInfoContext.Provider>
-    );
-};
+      const homeData = {
+        spotlights: allAnime.slice(0, 5), // first 5 for spotlight
+        genres: [...new Set(allAnime.map(a => a.genres).flat())], // unique genres
+        latest_episode: allAnime.slice(-12), // last 12 for latest episodes
+        top_airing: allAnime.slice(0, 10), // first 10 for top airing
+        most_favorite: allAnime.slice(0, 10), // first 10 as most favorite
+        latest_completed: allAnime.slice(-10), // last 10 completed
+        trending: allAnime.slice(0, 12), // first 12 trending
+        topten: allAnime.slice(0, 10), // first 10 top ten
+      };
 
-export const useHomeInfo = () => useContext(HomeInfoContext);
+      setHomeInfo(homeData);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setHomeInfoLoading(false);
+    }
+  };
+
+  fetchHomeInfo();
+}, []);
