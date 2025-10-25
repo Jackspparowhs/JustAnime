@@ -78,31 +78,7 @@
         }
       }
     </script>
-<video id="player" controls style="width:100%; max-height:60vh; background:#000"></video>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script>
-async function playHLS() {
-  const res = await fetch('https://anime-api-self-one.vercel.app/api/stream?id=let-this-grieving-soul-retire-part-2-19925&ep=145528&server=hd-1&type=sub');
-  const data = await res.json();
-  const videoUrl = data.results.streamingLink.file;
 
-  const video = document.getElementById('player');
-
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(videoUrl);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      video.play();
-    });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = videoUrl;
-    video.play();
-  }
-}
-
-playHLS();
-</script>
     <link rel="canonical" href="https://justanime.to" />
 
     <link
