@@ -4,6 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShield } from "@fortawesome/free-solid-svg-icons";
 
 function DMCA() {
+  // safe site name fallback (config may export string or object)
+  const siteName =
+    typeof website_name === 'string' ? website_name : website_name?.name ?? 'PirateRuler';
+  const contactUrl = 'https://PirateRuler.com/post/contact.html';
+
   return (
     <div className="max-w-5xl mx-auto pt-16 pb-5">
       {/* Content */}
@@ -17,7 +22,7 @@ function DMCA() {
             We take the intellectual property rights of others seriously and require that our Users do the same. 
             The Digital Millennium Copyright Act (DMCA) established a process for addressing claims of copyright infringement. 
             If you own a copyright or have authority to act on behalf of a copyright owner and want to report a claim that a 
-            third party is infringing that material on or through {website_name}'s services, please submit a DMCA report on 
+            third party is infringing that material on or through {siteName}'s services, please submit a DMCA report on 
             our Contact page, and we will take appropriate action.
           </p>
         </div>
@@ -46,12 +51,14 @@ function DMCA() {
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">Submit Your Request</h2>
           <p className="leading-relaxed text-base">
-            Your DMCA takedown request should be submit here:{' '}
+            Your DMCA takedown request should be submitted here:{' '}
             <a 
-              href="/contact" 
+              href={contactUrl} 
               className="text-white hover:text-white/80 underline underline-offset-4 decoration-white/20 hover:decoration-white/40 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              https://justanime.to/contact
+              {contactUrl}
             </a>
           </p>
           <p className="mt-3 leading-relaxed text-base">
@@ -63,4 +70,4 @@ function DMCA() {
   );
 }
 
-export default DMCA; 
+export default DMCA;
