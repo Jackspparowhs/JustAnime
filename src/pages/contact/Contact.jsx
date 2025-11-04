@@ -1,8 +1,7 @@
 import React from 'react';
 import website_name from '@/src/config/website.js';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDiscord, faGithub } from "@fortawesome/free-brands-svg-icons";
-import { faPaperPlane, faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { faGlobe } from "@fortawesome/free-solid-svg-icons";
 
 function Contact() {
   // safe fallback in case website_name is an object or missing
@@ -17,8 +16,7 @@ function Contact() {
 
       <div className="space-y-8 text-white/70">
         <p className="text-center text-lg">
-          Have questions, feedback, or a business inquiry? Get in touch with the {siteName} team
-          through any of the platforms below, or visit our main site for more details.
+          Have questions, feedback, or a business inquiry? Visit our main site or open the contact page to get in touch with the {siteName} team.
         </p>
 
         <div className="flex flex-wrap justify-center gap-6 mt-8">
@@ -27,49 +25,26 @@ function Contact() {
             href="https://PirateRuler.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-5 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
+            className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
           >
             <FontAwesomeIcon icon={faGlobe} className="text-xl text-white/60 group-hover:text-white" />
             <span className="text-white/60 group-hover:text-white">Visit PirateRuler.com</span>
           </a>
 
-          {/* Telegram */}
+          {/* Contact Page */}
           <a
-            href="#"
+            href="https://PirateRuler.com/post/contact.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-5 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
+            className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
           >
-            <FontAwesomeIcon icon={faPaperPlane} className="text-xl text-white/60 group-hover:text-white" />
-            <span className="text-white/60 group-hover:text-white">Join our Telegram</span>
-          </a>
-
-          {/* Discord */}
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-5 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
-          >
-            <FontAwesomeIcon icon={faDiscord} className="text-xl text-white/60 group-hover:text-white" />
-            <span className="text-white/60 group-hover:text-white">Join Discord Server</span>
-          </a>
-
-          {/* GitHub */}
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-5 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
-          >
-            <FontAwesomeIcon icon={faGithub} className="text-xl text-white/60 group-hover:text-white" />
-            <span className="text-white/60 group-hover:text-white">View on GitHub</span>
+            <span className="text-white/60 group-hover:text-white">Open Contact Page</span>
           </a>
         </div>
 
         <div className="mt-10 text-center">
           <p className="text-white/60">
-            You can also reach us directly via our contact page:{' '}
+            Or go directly to:{" "}
             <a
               href="https://PirateRuler.com/post/contact.html"
               target="_blank"
