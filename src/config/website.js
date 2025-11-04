@@ -1,3 +1,3 @@
-const website_name = "JustAnime";
+const website_name = "RulerPirate";
 
 export default website_name;
