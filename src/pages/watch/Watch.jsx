@@ -78,13 +78,14 @@ export default function Watch() {
     if (!episodes || episodes.length === 0) return;
     
     const isValidEpisode = episodes.some(ep => {
-      const epNumber = ep.id.split('ep=')[1];
-      return epNumber === episodeId; 
+      if (!ep?.id) return false;
+      const m = ep.id.match(/ep=(\d+)/);
+      return m ? m[1] === String(episodeId) : false;
     });
     
     // If missing or invalid episodeId, fallback to first
     if (!episodeId || !isValidEpisode) {
-      const fallbackId = episodes[0].id.match(/ep=(\d+)/)?.[1];
+      const fallbackId = episodes[0]?.id?.match(/ep=(\d+)/)?.[1];
       if (fallbackId && fallbackId !== episodeId) {
         setEpisodeId(fallbackId);
       }
@@ -103,11 +104,17 @@ export default function Watch() {
 
   // Update document title
   useEffect(() => {
+    // website_name might be a string or an object (safe fallback)
+    const siteName =
+      typeof website_name === "string"
+        ? website_name
+        : website_name?.name ?? "PirateRuler";
+
     if (animeInfo) {
-      document.title = `Watch ${animeInfo.title} English Sub/Dub online Free on ${website_name}`;
+      document.title = `Watch ${animeInfo.title} English Sub/Dub online Free on ${siteName}`;
     }
     return () => {
-      document.title = `${website_name} | Free anime streaming platform`;
+      document.title = `${siteName} | Free anime streaming platform`;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animeId]);
@@ -221,6 +228,10 @@ export default function Watch() {
       },
     ]);
   }, [animeId, animeInfo]);
+
+  // Safe helper to avoid runtime errors when activeServerName is undefined
+  const activeServerNameSafe = (activeServerName || "").toString();
+
   return (
     <div className="w-full min-h-screen bg-[#0a0a0a]">
       <div className="w-full max-w-[1920px] mx-auto pt-16 pb-6 w-full max-[1200px]:pt-12">
@@ -230,7 +241,7 @@ export default function Watch() {
             <div ref={playerRef} className="player w-full h-fit bg-black flex flex-col rounded-xl overflow-hidden">
               {/* Video Container */}
               <div ref={videoContainerRef} className="w-full relative aspect-video bg-black">
-                {!buffering ? (["hd-1", "hd-4"].includes(activeServerName.toLowerCase()) ?
+                {!buffering ? (["hd-1", "hd-4"].includes(activeServerNameSafe.toLowerCase()) ?
                   <IframePlayer
                     episodeId={episodeId}
                     servertype={activeServerType}
@@ -245,7 +256,7 @@ export default function Watch() {
                     subtitles={subtitles}
                     intro={intro}
                     outro={outro}
-                    serverName={activeServerName.toLowerCase()}
+                    serverName={activeServerNameSafe.toLowerCase()}
                     thumbnail={thumbnail}
                     autoSkipIntro={autoSkipIntro}
                     autoPlay={autoPlay}
