@@ -13,7 +13,7 @@ function Terms() {
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">1. Terms</h2>
           <p className="leading-relaxed text-base">
-            By accessing this Website, accessible from https://justanime.to, you are agreeing to be bound by these Website Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site. The materials contained in this Website are protected by copyright and trade mark law.
+            By accessing this Website, accessible from https://PirateRuler.com, you are agreeing to be bound by these Website Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site. The materials contained in this Website are protected by copyright and trade mark law.
           </p>
         </div>
 
@@ -27,10 +27,10 @@ function Terms() {
             <li>use the materials for any commercial purpose or for any public display;</li>
             <li>attempt to reverse engineer any software contained on {website_name}'s Website;</li>
             <li>remove any copyright or other proprietary notations from the materials; or</li>
-            <li>transferring the materials to another person or "mirror" the materials on any other server.</li>
+            <li>transfer the materials to another person or "mirror" the materials on any other server.</li>
           </ul>
           <p className="leading-relaxed text-base mt-4">
-            This will let {website_name} to terminate upon violations of any of these restrictions. Upon termination, your viewing right will also be terminated and you should destroy any downloaded materials in your possession whether it is printed or electronic format.
+            This will let {website_name} terminate upon violations of any of these restrictions. Upon termination, your viewing right will also be terminated and you should destroy any downloaded materials in your possession whether it is printed or electronic format.
           </p>
         </div>
 
@@ -44,7 +44,7 @@ function Terms() {
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">4. Limitations</h2>
           <p className="leading-relaxed text-base">
-            {website_name} or its suppliers will not be hold accountable for any damages that will arise with the use or inability to use the materials on {website_name}'s Website, even if {website_name} or an authorize representative of this Website has been notified, orally or written, of the possibility of such damage. Some jurisdiction does not allow limitations on implied warranties or limitations of liability for incidental damages, these limitations may not apply to you.
+            {website_name} or its suppliers will not be held accountable for any damages that will arise with the use or inability to use the materials on {website_name}'s Website, even if {website_name} or an authorized representative of this Website has been notified, orally or in writing, of the possibility of such damage. Some jurisdictions do not allow limitations on implied warranties or limitations of liability for incidental damages, these limitations may not apply to you.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ function Terms() {
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">9. Governing Law</h2>
           <p className="leading-relaxed text-base">
-            Any claim related to {website_name}'s Website shall be governed by the laws of bq without regards to its conflict of law provisions.
+            Any claim related to {website_name}'s Website shall be governed by the laws of India without regards to its conflict of law provisions.
           </p>
         </div>
       </div>
@@ -87,4 +87,4 @@ function Terms() {
   );
 }
 
-export default Terms; 
+export default Terms;
