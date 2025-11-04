@@ -6,7 +6,7 @@ import {
   faMicrophone,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import website_name from "@/src/config/website";
 import CategoryCard from "@/src/components/categorycard/CategoryCard";
 import Sidecard from "@/src/components/sidecard/Sidecard";
@@ -46,7 +46,7 @@ function InfoItem({ label, value, isProducer = true }) {
             )
           ) : isProducer ? (
             <Link
-              to={`/producer/${value
+              to={`/producer/${String(value)
                 .replace(/[&'"^%$#@!()+=<>:;,.?/\\|{}[\]`~*_]/g, "")
                 .split(" ")
                 .join("-")
@@ -78,83 +78,87 @@ function Tag({ bgColor, index, icon, text }) {
 function AnimeInfo({ random = false }) {
   const { language } = useLanguage();
   const { id: paramId } = useParams();
+  const location = useLocation();
   const id = random ? null : paramId;
   const [isFull, setIsFull] = useState(false);
-  const [animeInfo, setAnimeInfo] = useState(null);
+
+  // renamed to avoid confusion with nested animeInfo field
+  const [animeData, setAnimeData] = useState(null);
   const [seasons, setSeasons] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { homeInfo } = useHomeInfo();
   const { id: currentId } = useParams();
   const navigate = useNavigate();
+
   useEffect(() => {
     if (id === "404-not-found-page") {
       console.log("404 got!");
-      return null;
-    } else {
-      const fetchAnimeInfo = async () => {
-        setLoading(true);
-        try {
-          const data = await getAnimeInfo(id, random);
-          setSeasons(data?.seasons);
-          setAnimeInfo(data.data);
-        } catch (err) {
-          console.error("Error fetching anime info:", err);
-          setError(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchAnimeInfo();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
+
+    let mounted = true;
+    const controller = new AbortController();
+
+    const fetchAnimeInfo = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAnimeInfo(id, random, { signal: controller.signal });
+        if (!mounted) return;
+        setSeasons(data?.seasons ?? []);
+        setAnimeData(data?.data ?? null);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        console.error("Error fetching anime info:", err);
+        if (mounted) setError(err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchAnimeInfo();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, [id, random]);
+
+  // update document title safely
   useEffect(() => {
-    if (animeInfo && location.pathname === `/${animeInfo.id}`) {
-      document.title = `Watch ${animeInfo.title} English Sub/Dub online Free on ${website_name}`;
+    const siteName = typeof website_name === "string" ? website_name : website_name?.name ?? "PirateRuler";
+    if (animeData && location?.pathname === `/${animeData.id}`) {
+      document.title = `Watch ${animeData.title} English Sub/Dub online Free on ${siteName}`;
     }
     return () => {
-      document.title = `${website_name} | Free anime streaming platform`;
+      document.title = `${siteName} | Free anime streaming platform`;
     };
-  }, [animeInfo]);
+  }, [animeData, location]);
+
   if (loading) return <Loader type="animeInfo" />;
-  if (error) {
-    return <Error />;
-  }
-  if (!animeInfo) {
+  if (error) return <Error />;
+  if (!animeData) {
+    // navigate to 404 only if not loading and no data
     navigate("/404-not-found-page");
-    return undefined;
+    return null;
   }
-  const { title, japanese_title, poster, animeInfo: info } = animeInfo;
+
+  // safe destructure
+  const { title, japanese_title, poster, animeInfo: info = {} } = animeData;
+  const tvInfo = info?.tvInfo ?? {};
+
   const tags = [
-    {
-      condition: info.tvInfo?.rating,
-      bgColor: "#ffffff",
-      text: info.tvInfo.rating,
-    },
-    {
-      condition: info.tvInfo?.quality,
-      bgColor: "#FFBADE",
-      text: info.tvInfo.quality,
-    },
-    {
-      condition: info.tvInfo?.sub,
-      icon: faClosedCaptioning,
-      bgColor: "#B0E3AF",
-      text: info.tvInfo.sub,
-    },
-    {
-      condition: info.tvInfo?.dub,
-      icon: faMicrophone,
-      bgColor: "#B9E7FF",
-      text: info.tvInfo.dub,
-    },
-  ];
+    tvInfo?.rating ? { condition: true, bgColor: "#ffffff", text: tvInfo.rating } : null,
+    tvInfo?.quality ? { condition: true, bgColor: "#FFBADE", text: tvInfo.quality } : null,
+    tvInfo?.sub ? { condition: true, icon: faClosedCaptioning, bgColor: "#B0E3AF", text: tvInfo.sub } : null,
+    tvInfo?.dub ? { condition: true, icon: faMicrophone, bgColor: "#B9E7FF", text: tvInfo.dub } : null,
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       <div className="relative w-full overflow-hidden mt-[74px] max-md:mt-[60px]">
-
         {/* Main Content */}
         <div className="relative z-10 container mx-auto py-4 sm:py-6 lg:py-12">
           {/* Mobile Layout */}
@@ -164,11 +168,11 @@ function AnimeInfo({ random = false }) {
               <div className="flex-shrink-0">
                 <div className="relative w-[130px] xs:w-[150px] aspect-[2/3] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                   <img
-                    src={`${poster}`}
-                    alt={`${title} Poster`}
+                    src={String(poster ?? "")}
+                    alt={`${title ?? "Poster"} Poster`}
                     className="w-full h-full object-cover"
                   />
-                  {animeInfo.adultContent && (
+                  {animeData?.adultContent && (
                     <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500/90 backdrop-blur-sm rounded-md text-[10px] font-medium">
                       18+
                     </div>
@@ -181,25 +185,18 @@ function AnimeInfo({ random = false }) {
                 {/* Title */}
                 <div className="space-y-0.5">
                   <h1 className="text-lg xs:text-xl font-bold tracking-tight truncate">
-                    {language === "EN" ? title : japanese_title}
+                    {language === "EN" ? title ?? animeData?.title : japanese_title ?? animeData?.japanese_title}
                   </h1>
-                  {language === "EN" && japanese_title && (
-                    <p className="text-white/50 text-[11px] xs:text-xs truncate">JP Title: {japanese_title}</p>
+                  {language === "EN" && (japanese_title ?? animeData?.japanese_title) && (
+                    <p className="text-white/50 text-[11px] xs:text-xs truncate">JP Title: {japanese_title ?? animeData?.japanese_title}</p>
                   )}
                 </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1.5">
-                  {tags.map(({ condition, icon, text }, index) =>
-                    condition && (
-                      <Tag
-                        key={index}
-                        index={index}
-                        icon={icon}
-                        text={text}
-                      />
-                    )
-                  )}
+                  {tags.map(({ icon, text }, index) => (
+                    <Tag key={index} index={index} icon={icon} text={text} />
+                  ))}
                 </div>
 
                 {/* Overview - Limited for mobile */}
@@ -207,11 +204,7 @@ function AnimeInfo({ random = false }) {
                   <div className="text-gray-300 leading-relaxed text-xs">
                     {info.Overview.length > 150 ? (
                       <>
-                        {isFull ? (
-                          info.Overview
-                        ) : (
-                          <div className="line-clamp-3">{info.Overview}</div>
-                        )}
+                        {isFull ? info.Overview : <div className="line-clamp-3">{info.Overview}</div>}
                         <button
                           className="mt-1 text-white/70 hover:text-white transition-colors text-[10px] font-medium"
                           onClick={() => setIsFull(!isFull)}
@@ -229,15 +222,12 @@ function AnimeInfo({ random = false }) {
 
             {/* Watch Button - Full Width on Mobile */}
             <div className="mt-6">
-              {animeInfo?.animeInfo?.Status?.toLowerCase() !== "not-yet-aired" ? (
+              {String(tvInfo?.Status ?? info?.Status ?? "").toLowerCase() !== "not-yet-aired" ? (
                 <Link
-                  to={`/watch/${animeInfo.id}`}
+                  to={`/watch/${animeData.id}`}
                   className="flex justify-center items-center w-full px-4 py-3 bg-white/10 backdrop-blur-md rounded-lg text-white transition-all duration-300 hover:bg-white/20 group"
                 >
-                  <FontAwesomeIcon
-                    icon={faPlay}
-                    className="mr-2 text-xs group-hover:text-white"
-                  />
+                  <FontAwesomeIcon icon={faPlay} className="mr-2 text-xs group-hover:text-white" />
                   <span className="font-medium text-sm">Watch Now</span>
                 </Link>
               ) : (
@@ -251,25 +241,20 @@ function AnimeInfo({ random = false }) {
             <div className="mt-6 space-y-3 py-3 backdrop-blur-md bg-white/5 rounded-lg px-3 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: "Japanese", value: info?.Japanese },
-                  { label: "Synonyms", value: info?.Synonyms },
-                  { label: "Aired", value: info?.Aired },
-                  { label: "Premiered", value: info?.Premiered },
-                  { label: "Duration", value: info?.Duration },
-                  { label: "Status", value: info?.Status },
-                  { label: "MAL Score", value: info?.["MAL Score"] },
+                  { label: "Japanese", value: info?.Japanese ?? animeData?.animeInfo?.Japanese },
+                  { label: "Synonyms", value: info?.Synonyms ?? animeData?.animeInfo?.Synonyms },
+                  { label: "Aired", value: info?.Aired ?? animeData?.animeInfo?.Aired },
+                  { label: "Premiered", value: info?.Premiered ?? animeData?.animeInfo?.Premiered },
+                  { label: "Duration", value: info?.Duration ?? animeData?.animeInfo?.Duration },
+                  { label: "Status", value: info?.Status ?? animeData?.animeInfo?.Status },
+                  { label: "MAL Score", value: info?.["MAL Score"] ?? animeData?.animeInfo?.["MAL Score"] },
                 ].map((item, index) => (
-                  <InfoItem
-                    key={index}
-                    label={item.label}
-                    value={item.value}
-                    isProducer={false}
-                  />
+                  <InfoItem key={index} label={item.label} value={item.value} isProducer={false} />
                 ))}
               </div>
 
               {/* Genres */}
-              {info?.Genres && (
+              {info?.Genres?.length > 0 && (
                 <div className="pt-2 border-t border-white/10">
                   <p className="text-gray-400 text-xs mb-1.5">Genres</p>
                   <div className="flex flex-wrap gap-1">
@@ -289,31 +274,23 @@ function AnimeInfo({ random = false }) {
               {/* Studios & Producers */}
               <div className="space-y-2 pt-2 border-t border-white/10">
                 {[
-                  { label: "Studios", value: info?.Studios },
-                  { label: "Producers", value: info?.Producers },
+                  { label: "Studios", value: info?.Studios ?? animeData?.animeInfo?.Studios },
+                  { label: "Producers", value: info?.Producers ?? animeData?.animeInfo?.Producers },
                 ].map((item, index) => (
-                  <InfoItem
-                    key={index}
-                    label={item.label}
-                    value={item.value}
-                  />
+                  <InfoItem key={index} label={item.label} value={item.value} />
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Desktop Layout - Existing Code */}
+          {/* Desktop Layout */}
           <div className="hidden md:block">
             <div className="flex flex-row gap-6 lg:gap-10">
-              {/* Poster Section */}
+              {/* Poster */}
               <div className="flex-shrink-0">
                 <div className="relative w-[220px] lg:w-[260px] aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                  <img
-                    src={`${poster}`}
-                    alt={`${title} Poster`}
-                    className="w-full h-full object-cover"
-                  />
-                  {animeInfo.adultContent && (
+                  <img src={String(poster ?? "")} alt={`${title ?? "Poster"} Poster`} className="w-full h-full object-cover" />
+                  {animeData?.adultContent && (
                     <div className="absolute top-3 left-3 px-2.5 py-0.5 bg-red-500/90 backdrop-blur-sm rounded-lg text-xs font-medium">
                       18+
                     </div>
@@ -323,28 +300,20 @@ function AnimeInfo({ random = false }) {
 
               {/* Info Section */}
               <div className="flex-1 space-y-4 lg:space-y-5 min-w-0">
-                {/* Title */}
                 <div className="space-y-1">
                   <h1 className="text-3xl lg:text-4xl font-bold tracking-tight truncate">
-                    {language === "EN" ? title : japanese_title}
+                    {language === "EN" ? title ?? animeData?.title : japanese_title ?? animeData?.japanese_title}
                   </h1>
-                  {language === "EN" && japanese_title && (
-                    <p className="text-white/50 text-sm lg:text-base truncate">JP Title: {japanese_title}</p>
+                  {language === "EN" && (japanese_title ?? animeData?.japanese_title) && (
+                    <p className="text-white/50 text-sm lg:text-base truncate">JP Title: {japanese_title ?? animeData?.japanese_title}</p>
                   )}
                 </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2">
-                  {tags.map(({ condition, icon, text }, index) =>
-                    condition && (
-                      <Tag
-                        key={index}
-                        index={index}
-                        icon={icon}
-                        text={text}
-                      />
-                    )
-                  )}
+                  {tags.map(({ icon, text }, index) => (
+                    <Tag key={index} index={index} icon={icon} text={text} />
+                  ))}
                 </div>
 
                 {/* Overview */}
@@ -352,9 +321,7 @@ function AnimeInfo({ random = false }) {
                   <div className="text-gray-300 leading-relaxed max-w-3xl text-sm lg:text-base">
                     {info.Overview.length > 270 ? (
                       <>
-                        {isFull
-                          ? info.Overview
-                          : `${info.Overview.slice(0, 270)}...`}
+                        {isFull ? info.Overview : `${info.Overview.slice(0, 270)}...`}
                         <button
                           className="ml-2 text-white/70 hover:text-white transition-colors text-sm font-medium"
                           onClick={() => setIsFull(!isFull)}
@@ -369,15 +336,12 @@ function AnimeInfo({ random = false }) {
                 )}
 
                 {/* Watch Button */}
-                {animeInfo?.animeInfo?.Status?.toLowerCase() !== "not-yet-aired" ? (
+                {String(tvInfo?.Status ?? info?.Status ?? "").toLowerCase() !== "not-yet-aired" ? (
                   <Link
-                    to={`/watch/${animeInfo.id}`}
+                    to={`/watch/${animeData.id}`}
                     className="inline-flex items-center px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-xl text-white transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] group"
                   >
-                    <FontAwesomeIcon
-                      icon={faPlay}
-                      className="mr-2 text-sm group-hover:text-white"
-                    />
+                    <FontAwesomeIcon icon={faPlay} className="mr-2 text-sm group-hover:text-white" />
                     <span className="font-medium">Watch Now</span>
                   </Link>
                 ) : (
@@ -386,29 +350,24 @@ function AnimeInfo({ random = false }) {
                   </div>
                 )}
 
-                {/* Details Section */}
+                {/* Details */}
                 <div className="space-y-4 py-4 backdrop-blur-md bg-white/5 rounded-xl px-5">
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { label: "Japanese", value: info?.Japanese },
-                      { label: "Synonyms", value: info?.Synonyms },
-                      { label: "Aired", value: info?.Aired },
-                      { label: "Premiered", value: info?.Premiered },
-                      { label: "Duration", value: info?.Duration },
-                      { label: "Status", value: info?.Status },
-                      { label: "MAL Score", value: info?.["MAL Score"] },
+                      { label: "Japanese", value: info?.Japanese ?? animeData?.animeInfo?.Japanese },
+                      { label: "Synonyms", value: info?.Synonyms ?? animeData?.animeInfo?.Synonyms },
+                      { label: "Aired", value: info?.Aired ?? animeData?.animeInfo?.Aired },
+                      { label: "Premiered", value: info?.Premiered ?? animeData?.animeInfo?.Premiered },
+                      { label: "Duration", value: info?.Duration ?? animeData?.animeInfo?.Duration },
+                      { label: "Status", value: info?.Status ?? animeData?.animeInfo?.Status },
+                      { label: "MAL Score", value: info?.["MAL Score"] ?? animeData?.animeInfo?.["MAL Score"] },
                     ].map((item, index) => (
-                      <InfoItem
-                        key={index}
-                        label={item.label}
-                        value={item.value}
-                        isProducer={false}
-                      />
+                      <InfoItem key={index} label={item.label} value={item.value} isProducer={false} />
                     ))}
                   </div>
 
                   {/* Genres */}
-                  {info?.Genres && (
+                  {info?.Genres?.length > 0 && (
                     <div className="pt-3 border-t border-white/10">
                       <p className="text-gray-400 text-sm mb-2">Genres</p>
                       <div className="flex flex-wrap gap-1.5">
@@ -428,14 +387,10 @@ function AnimeInfo({ random = false }) {
                   {/* Studios & Producers */}
                   <div className="space-y-3 pt-3 border-t border-white/10">
                     {[
-                      { label: "Studios", value: info?.Studios },
-                      { label: "Producers", value: info?.Producers },
+                      { label: "Studios", value: info?.Studios ?? animeData?.animeInfo?.Studios },
+                      { label: "Producers", value: info?.Producers ?? animeData?.animeInfo?.Producers },
                     ].map((item, index) => (
-                      <InfoItem
-                        key={index}
-                        label={item.label}
-                        value={item.value}
-                      />
+                      <InfoItem key={index} label={item.label} value={item.value} />
                     ))}
                   </div>
                 </div>
@@ -443,7 +398,7 @@ function AnimeInfo({ random = false }) {
             </div>
           </div>
         </div>
-      </div>
+      </div> {/* end main wrapper */}
 
       {/* Seasons Section */}
       {seasons?.length > 0 && (
@@ -469,7 +424,6 @@ function AnimeInfo({ random = false }) {
                       : "opacity-40"
                   }`}
                 />
-                {/* Dots Pattern Overlay */}
                 <div 
                   className="absolute inset-0 z-10" 
                   style={{ 
@@ -477,13 +431,11 @@ function AnimeInfo({ random = false }) {
                     backgroundSize: '3px 3px'
                   }}
                 />
-                {/* Dark Gradient Overlay */}
                 <div className={`absolute inset-0 z-20 bg-gradient-to-r ${
                   currentId === String(season.id)
                     ? "from-black/50 to-transparent"
                     : "from-black/40 to-transparent"
                 }`} />
-                {/* Title Container */}
                 <div className="absolute inset-0 z-30 flex items-center justify-center">
                   <p className={`text-[14px] sm:text-[16px] md:text-[18px] font-bold text-center px-2 sm:px-4 transition-colors duration-300 ${
                     currentId === String(season.id)
@@ -500,19 +452,19 @@ function AnimeInfo({ random = false }) {
       )}
 
       {/* Voice Actors Section */}
-      {animeInfo?.charactersVoiceActors.length > 0 && (
+      {animeData?.charactersVoiceActors?.length > 0 && (
         <div className="container mx-auto py-12">
-          <Voiceactor animeInfo={animeInfo} />
+          <Voiceactor animeInfo={animeData} />
         </div>
       )}
 
       {/* Recommendations Section */}
-      {animeInfo.recommended_data.length > 0 && (
+      {animeData?.recommended_data?.length > 0 && (
         <div className="container mx-auto py-12">
           <CategoryCard
             label="Recommended for you"
-            data={animeInfo.recommended_data}
-            limit={animeInfo.recommended_data.length}
+            data={animeData.recommended_data}
+            limit={animeData.recommended_data.length}
             showViewMore={false}
           />
         </div>
