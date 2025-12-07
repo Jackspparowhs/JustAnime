@@ -51,7 +51,7 @@ function Contact() {
               rel="noopener noreferrer"
               className="text-white underline underline-offset-4 hover:text-white/80 transition-colors"
             >
-              https://PirateRuler.com/post/contact.html
+              https://PirateRuler.com
             </a>
           </p>
         </div>
