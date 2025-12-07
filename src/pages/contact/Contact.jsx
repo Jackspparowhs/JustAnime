@@ -46,7 +46,7 @@ function Contact() {
           <p className="text-white/60">
             Or go directly to:{" "}
             <a
-              href="https://PirateRuler.com/post/contact.html"
+              href="https://PirateRuler.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white underline underline-offset-4 hover:text-white/80 transition-colors"
