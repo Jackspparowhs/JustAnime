@@ -31,30 +31,26 @@ function Footer() {
                   key={index}
                   className="px-2.5 py-1 text-sm bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded transition-colors"
                 >
-                  {item}
-                </Link>
-              ))}
-            </div>
-            <div className="flex gap-4 flex-wrap justify-center sm:justify-start mt-4">
-              <Link
-                to="/terms-of-service"
-                className="text-sm text-white/60 hover:text-white transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <Link
-                to="/dmca"
-                className="text-sm text-white/60 hover:text-white transition-colors"
-              >
-                About
-              </Link>
-              <Link
-                to="/contact"
-                className="text-sm text-white/60 hover:text-white transition-colors"
-              >
-                Contact
-              </Link>
-            </div>
+              <div className="flex gap-4 flex-wrap justify-center sm:justify-start mt-4">
+  <Link
+    to="https://pirateruler.com/post/terms.html" // UPDATED
+    className="text-sm text-white/60 hover:text-white transition-colors"
+  >
+    Terms of Service
+  </Link>
+  <Link
+    to="https://pirateruler.com/post/about.html" // UPDATED
+    className="text-sm text-white/60 hover:text-white transition-colors"
+  >
+    About
+  </Link>
+  <Link
+    to="https://pirateruler.com/post/contact.html" // UPDATED
+    className="text-sm text-white/60 hover:text-white transition-colors"
+  >
+    Contact
+  </Link>
+</div>
           </div>
 
           {/* Legal Text */}
